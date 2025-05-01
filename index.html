@@ -2,8 +2,9 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <meta property="og:title" content="FlareReps">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlareReps.PL</title>
+    <title>LozReps</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles for a smoother, darker look with particles */
@@ -32,16 +33,16 @@
             cursor: pointer; /* Add pointer cursor */
         }
         .tab-button:hover, .brand-button:hover {
-            background-color: #111; /* Darker hover */
+            background-color: #686565; /* Darker hover */
             transform: translateY(-2px); /* Slight lift */
         }
         .tab-button.active, .brand-button.active {
-            background-color: #1a202c; /* Active color */
-            border-bottom: 2px solid #4a5568; /* Dark gray highlight */
+            background-color: #262627; /* Active color */
+            border-bottom: 2px solid #000000; /* Dark gray highlight */
         }
 
         .item-card {
-            background-color: #111; /* Darker card background */
+    
             border-radius: 10px; /* Maintain rounded corners for smoothness */
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); /* Darker shadow */
@@ -55,7 +56,7 @@
 
         .agent-select-button {
              transition: background-color 0.3s ease, transform 0.1s ease;
-             background-color: #2d3748; /* Dark gray button */
+             background-color: #202020; /* Dark gray button */
              color: white;
              padding: 10px 15px;
              border-radius: 5px;
@@ -67,7 +68,7 @@
              border: none; /* Remove default button border */
         }
         .agent-select-button:hover {
-             background-color: #4a5568; /* Lighter dark gray on hover */
+             background-color: #2e2e2e; /* Lighter dark gray on hover */
         }
         .agent-select-button:active {
              transform: scale(0.98); /* Click feedback */
@@ -78,7 +79,7 @@
             bottom: 0; /* Position at the bottom of the card */
             left: 0;
             right: 0;
-            background-color: #2d3748; /* Dark background for links */
+            background-color: #202020; /* Dark background for links */
             padding: 10px;
             display: none; /* Hidden by default */
             flex-direction: column;
@@ -89,7 +90,7 @@
         }
 
         .agent-links a {
-            color: #cbd5e0; /* Light text color */
+            color: #ffffff; /* Light text color */
             text-decoration: none;
             padding: 5px;
             border-radius: 3px;
@@ -112,14 +113,14 @@
 
     <canvas id="particle-canvas"></canvas>
 
-    <header class="bg-gray-900 py-6 shadow-lg">
+    <header class="bg-black py-6 shadow-lg">
         <div class="container mx-auto px-4 text-center">
-            <h1 class="text-4xl font-bold text-white">Spreadshet FlareReps</h1>
-            <p class="mt-2 text-gray-400">Znajdź najlepsze repliki tutaj</p>
+            <h1 class="text-4xl font-bold text-white">FlareReps.pl</h1>
+            <p class="mt-2 text-gray-400">Spreadshet</p>
         </div>
     </header>
 
-    <nav class="bg-gray-800 shadow-md">
+    <nav class="bg-black-800 shadow-md">
         <div class="container mx-auto px-4 py-3 flex flex-col items-center space-y-4">
             <div class="flex justify-center space-x-4" id="category-buttons">
                 </div>
@@ -133,10 +134,8 @@
             </div>
     </main>
 
-    <footer class="bg-gray-900 py-6 mt-8 text-center text-gray-400">
-        <div class="container mx-auto px-4">
-            <p>&copy; 2025 FlareReps.</p>
-        </div>
+    <footer class="bg-black-900 py-6 mt-8 text-center text-gray-400">
+        <p>&copy; 2025 LozReps.</p>
     </footer>
 
     <script>
@@ -198,11 +197,11 @@
                 }
 
                 const itemCardHTML = `
-                    <div class="item-card bg-gray-800 rounded-lg overflow-hidden shadow-lg" data-brand="${item.brand}" data-category="${item.category}" data-weidian-id="${itemID}">
+                    <div class="item-card bg-black-900 rounded-lg overflow-hidden shadow-lg" data-brand="${item.brand}" data-category="${item.category}" data-weidian-id="${itemID}">
                         <img src="${item.imageUrl}" alt="${item.name}" class="w-full h-48 object-cover">
                         <div class="p-4">
                             <h3 class="text-xl font-semibold text-gray-100">${item.name}</h3>
-                            <p class="mt-2 text-gray-400 text-sm">${item.description}</p>
+                            <p class="mt-2 text-white text-sm">${item.description}</p>
                             <button class="agent-select-button">Wybierz Agenta</button>
                             <div class="agent-links">
                                 </div>
@@ -329,7 +328,7 @@
             // Create category buttons and item containers
             categories.forEach((category, index) => {
                 const button = document.createElement('button');
-                button.classList.add('tab-button', 'px-4', 'py-2', 'rounded-md', 'text-gray-300');
+                button.classList.add('tab-button', 'bg-black', 'px-4', 'py-2', 'rounded-md', 'text-white');
                 button.setAttribute('data-tab', category.id);
                 button.textContent = category.name;
                 if (index === 0) {
@@ -354,7 +353,7 @@
             // Create brand buttons
             brands.forEach((brand, index) => {
                 const button = document.createElement('button');
-                button.classList.add('brand-button', 'px-4', 'py-2', 'rounded-md', 'text-gray-300');
+                button.classList.add('brand-button', 'bg-black', 'px-4', 'py-2', 'rounded-md', 'text-white');
                 button.setAttribute('data-brand', brand.id);
                 button.textContent = brand.name;
                  if (index === 0) {
