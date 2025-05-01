@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LozReps</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for a smoother, darker look with particles */
+        body {
+            font-family: "Inter", sans-serif; /* Using Inter font */
+            background-color: #050505; /* Even Deeper black background */
+            color: #cbd5e0; /* Slightly darker text color for contrast */
+            line-height: 1.6;
+            overflow-x: hidden; /* Prevent horizontal scroll due to particles */
+            position: relative; /* Needed for absolute positioning of canvas */
+        }
+
+        /* Particle Canvas */
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Place behind content */
+            pointer-events: none; /* Allow clicks to pass through */
+        }
+
+        .tab-button, .brand-button {
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            cursor: pointer; /* Add pointer cursor */
+        }
+        .tab-button:hover, .brand-button:hover {
+            background-color: #111; /* Darker hover */
+            transform: translateY(-2px); /* Slight lift */
+        }
+        .tab-button.active, .brand-button.active {
+            background-color: #1a202c; /* Active color */
+            border-bottom: 2px solid #4a5568; /* Dark gray highlight */
+        }
+
+        .item-card {
+            background-color: #111; /* Darker card background */
+            border-radius: 10px; /* Maintain rounded corners for smoothness */
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); /* Darker shadow */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative; /* Needed for positioning agent links */
+        }
+        .item-card:hover {
+            transform: translateY(-8px); /* More pronounced lift effect */
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.8); /* Even Deeper shadow on hover */
+        }
+
+        .agent-select-button {
+             transition: background-color 0.3s ease, transform 0.1s ease;
+             background-color: #2d3748; /* Dark gray button */
+             color: white;
+             padding: 10px 15px;
+             border-radius: 5px;
+             text-align: center;
+             display: block;
+             width: 100%; /* Make button full width */
+             margin-top: 1rem;
+             cursor: pointer; /* Indicate clickable */
+             border: none; /* Remove default button border */
+        }
+        .agent-select-button:hover {
+             background-color: #4a5568; /* Lighter dark gray on hover */
+        }
+        .agent-select-button:active {
+             transform: scale(0.98); /* Click feedback */
+        }
+
+        .agent-links {
+            position: absolute;
+            bottom: 0; /* Position at the bottom of the card */
+            left: 0;
+            right: 0;
+            background-color: #2d3748; /* Dark background for links */
+            padding: 10px;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            gap: 5px;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            z-index: 10; /* Ensure links are above other content */
+        }
+
+        .agent-links a {
+            color: #cbd5e0; /* Light text color */
+            text-decoration: none;
+            padding: 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s ease;
+            text-align: center;
+        }
+
+        .agent-links a:hover {
+            background-color: #4a5568; /* Lighter dark gray on hover */
+        }
+
+        /* Ensure content is above the particle canvas */
+        header, nav, main, footer {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <canvas id="particle-canvas"></canvas>
+
+    <header class="bg-gray-900 py-6 shadow-lg">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold text-white">LozReps Arkusz</h1>
+            <p class="mt-2 text-gray-400">Znajdź najlepsze repliki tutaj</p>
+        </div>
+    </header>
+
+    <nav class="bg-gray-800 shadow-md">
+        <div class="container mx-auto px-4 py-3 flex flex-col items-center space-y-4">
+            <div class="flex justify-center space-x-4" id="category-buttons">
+                </div>
+            <div class="flex justify-center space-x-4" id="brand-buttons">
+                 </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <div id="item-sections">
+            </div>
+    </main>
+
+    <footer class="bg-gray-900 py-6 mt-8 text-center text-gray-400">
+        <div class="container mx-auto px-4">
+            <p>&copy; 2025 LozReps. Wszelkie prawa zastrzeżone.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Define Categories and Brands variables (will be populated from JSON)
+        let categories = [];
+        let brands = [];
+
+        // Variable to hold item data fetched from JSON
+        let itemsData = [];
+
+        // Object to hold references to item container elements
+        const itemContainers = {};
+
+        // Flag to ensure UI is initialized only once
+        let isUIInitialized = false;
+
+        // Variables to track active category and brand
+        let activeCategory = ''; // Will be set after categories are loaded
+        let activeBrand = 'all'; // Default active brand
+
+
+        // Function to generate agent links from Weidian ID
+        function generateAgentLinksFromWeidianID(itemID) {
+            console.log("Generating agent links for item ID:", itemID); // Debugging log
+            const links = [];
+            // Reconstruct the full Weidian link for agents that require it
+            const weidianLink = `https://weidian.com/item.html?itemID=${itemID}`;
+            const encodedWeidianLink = encodeURIComponent(weidianLink);
+
+            links.push({ name: 'CNFans', url: `https://cnfans.com/product?id=${itemID}&platform=WEIDIAN` });
+            links.push({ name: 'Kakobuy', url: `https://www.kakobuy.com/item/details?url=${encodedWeidianLink}` });
+            links.push({ name: 'ACBuy', url: `https://www.acbuy.com/product/?id=${itemID}&source=WD` });
+
+            console.log("Generated links:", links); // Debugging log
+            return links;
+        }
+
+        // Function to render item cards based on filtered data
+        function renderItems(itemsToRender) {
+             console.log("Rendering items:", itemsToRender); // Debugging log
+             // Clear all item containers first
+            categories.forEach(category => {
+                const container = itemContainers[category.id]; // Get container from the object
+                if (container) {
+                    container.innerHTML = '';
+                    console.log(`Cleared container for category: ${category.id}`); // Debugging log
+                } else {
+                    console.warn(`Container not found for category during clearing: ${category.id}`); // Debugging log
+                }
+            });
+
+
+            itemsToRender.forEach(item => {
+                const itemID = item.weidianID; // Get ID directly from data
+
+                if (!itemID) {
+                    console.error("Skipping item due to missing Weidian ID:", item);
+                    return; // Skip this item if the ID is missing
+                }
+
+                const itemCardHTML = `
+                    <div class="item-card bg-gray-800 rounded-lg overflow-hidden shadow-lg" data-brand="${item.brand}" data-category="${item.category}" data-weidian-id="${itemID}">
+                        <img src="${item.imageUrl}" alt="${item.name}" class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <h3 class="text-xl font-semibold text-gray-100">${item.name}</h3>
+                            <p class="mt-2 text-gray-400 text-sm">${item.description}</p>
+                            <button class="agent-select-button">Wybierz Agenta</button>
+                            <div class="agent-links">
+                                </div>
+                        </div>
+                    </div>
+                `;
+
+                // Append the item card to the correct category container
+                const container = itemContainers[item.category]; // Get container from the object
+                if (container) {
+                     container.innerHTML += itemCardHTML;
+                     console.log(`Appended item "${item.name}" to container "${item.category}-items"`); // Debugging log
+                } else {
+                    console.error("No container found for category:", item.category, "Item:", item); // Debugging log
+                }
+            });
+
+             // After rendering, re-attach event listeners to the new agent buttons
+            attachAgentButtonListeners();
+            console.log("Rendering complete. Agent button listeners re-attached."); // Debugging log
+        }
+
+
+        // Function to filter items based on active category and brand
+        function filterAndRenderItems() {
+            // Ensure activeCategory is set before filtering
+            if (!activeCategory && categories.length > 0) {
+                 activeCategory = categories[0].id; // Set default if not already set and categories are loaded
+            }
+
+            console.log(`Filtering items for active category: "${activeCategory}", active brand: "${activeBrand}"`); // Debugging log
+            const filteredItems = itemsData.filter(item => {
+                const categoryMatch = item.category === activeCategory;
+                const brandMatch = activeBrand === 'all' || item.brand === activeBrand;
+                 console.log(`Checking item "${item.name}": Category "${item.category}" (Match: ${categoryMatch}), Brand "${item.brand}" (Match: ${brandMatch}). Overall Match: ${categoryMatch && brandMatch}`); // Debugging log
+                return categoryMatch && brandMatch;
+            });
+            console.log("Filtered items:", filteredItems); // Debugging log
+            renderItems(filteredItems);
+        }
+
+
+        // Function to attach event listeners to agent select buttons
+        function attachAgentButtonListeners() {
+             const agentButtons = document.querySelectorAll('.agent-select-button');
+             console.log("Attaching agent button listeners. Found buttons:", agentButtons.length); // Debugging log
+             agentButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    console.log("Agent select button clicked."); // Debugging log
+
+                    const itemCard = button.closest('.item-card');
+                    const weidianID = itemCard.getAttribute('data-weidian-id'); // Get the ID from the attribute
+                    const agentLinksDiv = button.nextElementSibling;
+
+                    // Close any other open agent link sections
+                    document.querySelectorAll('.agent-links').forEach(links => {
+                        if (links !== agentLinksDiv) {
+                            links.style.display = 'none';
+                        }
+                    });
+
+                    // Clear previous links in the current dropdown
+                     agentLinksDiv.innerHTML = '';
+
+                    if (weidianID) {
+                        const generatedLinks = generateAgentLinksFromWeidianID(weidianID); // Pass ID
+
+                        generatedLinks.forEach(linkInfo => {
+                            const linkElement = document.createElement('a');
+                            linkElement.href = linkInfo.url;
+                            linkElement.target = '_blank'; // Open in new tab
+                            linkElement.textContent = linkInfo.name;
+                            agentLinksDiv.appendChild(linkElement);
+                        });
+                         console.log("Generated and appended agent links."); // Debugging log
+                    } else {
+                        console.error("Weidian ID not found on item card.");
+                        // Optionally display a message in the agentLinksDiv
+                    }
+
+
+                    // Toggle the display of the agent links for the clicked button
+                    if (agentLinksDiv.style.display === 'flex') {
+                        agentLinksDiv.style.display = 'none';
+                         console.log("Agent links hidden."); // Debugging log
+                    } else {
+                        agentLinksDiv.style.display = 'flex';
+                         console.log("Agent links shown."); // Debugging log
+                    }
+                });
+            });
+
+            // Close agent links when clicking anywhere else on the document
+            document.addEventListener('click', (event) => {
+                // Check if the click was outside of any agent select button or agent links div
+                if (!event.target.classList.contains('agent-select-button') && !event.target.closest('.agent-links')) {
+                     document.querySelectorAll('.agent-links').forEach(links => {
+                        links.style.display = 'none';
+                    });
+                     // console.log("Clicked outside agent links/buttons, hiding all agent links."); // Debugging log
+                }
+            });
+        }
+
+        // Function to initialize category and brand buttons and item containers
+        function initializeUI() {
+            if (isUIInitialized) {
+                console.log("UI already initialized. Skipping."); // Debugging log
+                return; // Prevent re-initialization
+            }
+
+            console.log("Initializing UI..."); // Debugging log
+            const categoryButtonsContainer = document.getElementById('category-buttons');
+            const brandButtonsContainer = document.getElementById('brand-buttons');
+            const itemSectionsContainer = document.getElementById('item-sections');
+
+            // Clear existing buttons and sections before creating
+            categoryButtonsContainer.innerHTML = '';
+            brandButtonsContainer.innerHTML = '';
+            itemSectionsContainer.innerHTML = '';
+
+
+            // Create category buttons and item containers
+            categories.forEach((category, index) => {
+                const button = document.createElement('button');
+                button.classList.add('tab-button', 'px-4', 'py-2', 'rounded-md', 'text-gray-300');
+                button.setAttribute('data-tab', category.id);
+                button.textContent = category.name;
+                if (index === 0) {
+                    button.classList.add('active'); // Make the first category active
+                }
+                categoryButtonsContainer.appendChild(button);
+
+                const itemSection = document.createElement('div');
+                itemSection.id = category.id;
+                itemSection.classList.add('tab-content');
+                if (index !== 0) {
+                    itemSection.classList.add('hidden'); // Hide content for non-active categories
+                }
+                itemSection.innerHTML = `<h2 class="text-3xl font-semibold mb-6 text-center text-gray-200">${category.name}</h2><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="${category.id}-items"></div>`;
+                itemSectionsContainer.appendChild(itemSection);
+
+                 // Store reference to the item container after it's added to the DOM
+                itemContainers[category.id] = document.getElementById(`${category.id}-items`);
+                console.log(`Created container for category: ${category.id}`, itemContainers[category.id]); // Debugging log
+            });
+
+            // Create brand buttons
+            brands.forEach((brand, index) => {
+                const button = document.createElement('button');
+                button.classList.add('brand-button', 'px-4', 'py-2', 'rounded-md', 'text-gray-300');
+                button.setAttribute('data-brand', brand.id);
+                button.textContent = brand.name;
+                 if (index === 0) {
+                    button.classList.add('active'); // Make the first brand ('all') active
+                }
+                brandButtonsContainer.appendChild(button);
+            });
+
+             // Re-select button and content elements after they are created
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const brandButtons = document.querySelectorAll('.brand-button');
+            const contents = document.querySelectorAll('.tab-content');
+
+
+            // Event listeners for Category Tabs
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    activeCategory = button.getAttribute('data-tab');
+                    console.log("Category tab clicked:", activeCategory); // Debugging log
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    contents.forEach(content => content.classList.add('hidden'));
+                    document.getElementById(activeCategory).classList.remove('hidden');
+                    activeBrand = 'all'; // Reset brand filter
+                    brandButtons.forEach(btn => btn.classList.remove('active'));
+                    document.querySelector('.brand-button[data-brand="all"]').classList.add('active');
+                    filterAndRenderItems();
+                });
+            });
+
+            // Event listeners for Brand Buttons
+            brandButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    activeBrand = button.getAttribute('data-brand');
+                     console.log("Brand button clicked:", activeBrand); // Debugging log
+                    brandButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    filterAndRenderItems();
+                });
+            });
+
+            isUIInitialized = true; // Set the flag to true after successful initialization
+             console.log("UI Initialization complete."); // Debugging log
+        }
+
+
+        // Particle effect script
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const numParticles = 300; // Increased number of particles
+        const particleColor = 'rgba(180, 180, 180, 0.15)'; // Slightly more opaque particles
+        const particleSize = 1.5; // Slightly larger particle size
+        const particleSpeed = 0.2; // Slower movement
+
+        // Set canvas size
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            // Re-generate particles on resize for better distribution
+            particles = [];
+            createParticles();
+        });
+
+        // Particle class
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * particleSize + 0.5; // Use particleSize variable and slightly larger minimum
+                this.speedX = Math.random() * particleSpeed * 2 - particleSpeed; // Use particleSpeed variable
+                this.speedY = Math.random() * particleSpeed * 2 - particleSpeed; // Use particleSpeed variable
+                this.color = particleColor; // Use particleColor variable
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Wrap particles around the screen
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Create particles
+        function createParticles() {
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        // Animation loop
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            requestAnimationFrame(animateParticles); // Loop the animation
+        }
+
+        // Initialize particles
+        createParticles();
+        animateParticles();
+
+        // Fetch all necessary data using Promise.all
+        console.log("Fetching all data (items, brands, categories)..."); // Debugging log
+        Promise.all([
+            fetch('https://raw.githubusercontent.com/sigmaboysigmaboyreps/sitereps/refs/heads/main/itemy.json').then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} fetching items`);
+                }
+                return response.json();
+            }),
+            fetch('https://raw.githubusercontent.com/sigmaboysigmaboyreps/sitereps/refs/heads/main/brands.json').then(response => {
+                 if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} fetching brands`);
+                }
+                return response.json();
+            }),
+            fetch('https://raw.githubusercontent.com/sigmaboysigmaboyreps/sitereps/refs/heads/main/kategorie.json').then(response => {
+                 if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} fetching categories`);
+                }
+                return response.json();
+            })
+        ])
+        .then(([itemsDataResult, brandsResult, categoriesResult]) => {
+            console.log("All data fetched successfully."); // Debugging log
+            itemsData = itemsDataResult; // Assign fetched item data
+            brands = brandsResult; // Assign fetched brands data
+            categories = categoriesResult; // Assign fetched categories data
+
+            // Set initial active category after categories are loaded
+            if (categories.length > 0) {
+                activeCategory = categories[0].id;
+            }
+
+            initializeUI(); // Initialize UI after all data is loaded
+            filterAndRenderItems(); // Initial rendering after data and UI are ready
+            console.log("UI initialized and initial items rendered."); // Debugging log
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+            // Display an error message on the page
+            document.getElementById('item-sections').innerHTML = `<p class="text-center text-red-500">Błąd podczas ładowania danych: ${error.message}. Spróbuj odświeżyć stronę.</p>`;
+        });
+
+    </script>
+
+</body>
+</html>
