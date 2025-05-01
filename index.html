@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta property="og:title" content="FlareReps">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LozReps</title>
+    <title>FlareReps</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles for a smoother, darker look with particles */
@@ -42,17 +42,31 @@
         }
 
         .item-card {
-    
+            background-color: #111; /* Ensure card background is set */
             border-radius: 10px; /* Maintain rounded corners for smoothness */
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); /* Darker shadow */
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             position: relative; /* Needed for positioning agent links */
+            display: flex; /* Use flexbox for card content layout */
+            flex-direction: column; /* Stack image and text vertically */
         }
         .item-card:hover {
             transform: translateY(-8px); /* More pronounced lift effect */
             box-shadow: 0 15px 25px rgba(0, 0, 0, 0.8); /* Even Deeper shadow on hover */
         }
+
+        .item-card img {
+            flex-shrink: 0; /* Prevent image from shrinking */
+        }
+
+        .item-card .p-4 {
+            flex-grow: 1; /* Allow content area to grow */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Push button to the bottom */
+        }
+
 
         .agent-select-button {
              transition: background-color 0.3s ease, transform 0.1s ease;
@@ -107,6 +121,39 @@
             position: relative;
             z-index: 1;
         }
+
+        /* Header layout with logo placeholder */
+        .header-content {
+            display: flex;
+            align-items: center; /* Vertically align items */
+            justify-content: flex-start; /* Align items to the left */
+            gap: 20px; /* Space between logo placeholder and text */
+        }
+
+        .logo-placeholder {
+            width: 50px; /* Adjust size as needed for your logo */
+            height: 50px; /* Adjust size as needed for your logo */
+            background-color: #333; /* Placeholder background color */
+            border-radius: 8px;
+            /* Add any placeholder icon or text here if desired */
+        }
+
+        /* Social Media Icons in Footer */
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px; /* Space between icons */
+            margin-top: 1rem; /* Space above icons */
+        }
+
+        .social-icon {
+            color: #cbd5e0; /* Icon color */
+            transition: color 0.3s ease;
+        }
+
+        .social-icon:hover {
+            color: #ffffff; /* Lighter color on hover */
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -114,9 +161,13 @@
     <canvas id="particle-canvas"></canvas>
 
     <header class="bg-black py-6 shadow-lg">
-        <div class="container mx-auto px-4 text-center">
-            <h1 class="text-4xl font-bold text-white">FlareReps.pl</h1>
-            <p class="mt-2 text-gray-400">Spreadshet</p>
+        <div class="container mx-auto px-4 header-content">
+            <div class="logo-placeholder">
+                </div>
+            <div>
+                <h1 class="text-4xl font-bold text-white">FlareReps.pl</h1>
+                <p class="mt-2 text-gray-400">Spreadshet</p>
+            </div>
         </div>
     </header>
 
@@ -126,6 +177,7 @@
                 </div>
             <div class="flex justify-center space-x-4" id="brand-buttons">
                  </div>
+             <input type="text" id="search-input" placeholder="Szukaj przedmiotów..." class="px-4 py-2 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
     </nav>
 
@@ -135,7 +187,17 @@
     </main>
 
     <footer class="bg-black-900 py-6 mt-8 text-center text-gray-400">
-        <p>&copy; 2025 LozReps.</p>
+        <div class="container mx-auto px-4">
+            <p>&copy; 2025 FlareReps.</p>
+            <div class="social-icons">
+                <a href="#" target="_blank" class="social-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tiktok"><path d="M20.945 8.413a4.5 4.5 0 0 0-2.95-4.65c-.76-.17-1.52-.24-2.29-.24H11.5v8.94c0 1.1-.9 2-2 2s-2-.9-2-2V8.41h-3a2 2 0 0 0 0 4h3v3a7 7 0 0 0 7 7h2.5c1.38 0 2.5-1.12 2.5-2.5V12.5a2.5 2.5 0 0 0 2.5-2.5v-1.5a.5.5 0 0 0-.05-.29z"/></svg>
+                </a>
+                <a href="#" target="_blank" class="social-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-twitter"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3c0 .42.03.83.1 1.22A10.9 10.9 0 0 1 3 4c-.83 1-1.5 2.16-1.9 3.43a4.48 4.48 0 0 0 1.1 5.93c-.36-.01-.72-.08-1.07-.2v.17a4.48 4.48 0 0 0 3.6 4.44c-.37.1-.76.14-1.15.17a4.48 4.48 0 0 0 4.18 3.14 9.11 9.11 0 0 1-5.66 1.94c-.35 0-.7-.02-1.05-.06A12.93 12.93 0 0 0 10 22c12 0 18.6-9.96 18.6-18.6 0-.19 0-.38-.01-.57A13.29 13.29 0 0 0 23 3z"/></svg>
+                </a>
+            </div>
+        </div>
     </footer>
 
     <script>
@@ -155,6 +217,9 @@
         // Variables to track active category and brand
         let activeCategory = ''; // Will be set after categories are loaded
         let activeBrand = 'all'; // Default active brand
+
+        // Variable to hold the current search query
+        let searchQuery = '';
 
 
         // Function to generate agent links from Weidian ID
@@ -225,19 +290,24 @@
         }
 
 
-        // Function to filter items based on active category and brand
+        // Function to filter items based on active category, brand, and search query
         function filterAndRenderItems() {
             // Ensure activeCategory is set before filtering
             if (!activeCategory && categories.length > 0) {
                  activeCategory = categories[0].id; // Set default if not already set and categories are loaded
             }
 
-            console.log(`Filtering items for active category: "${activeCategory}", active brand: "${activeBrand}"`); // Debugging log
+            console.log(`Filtering items for active category: "${activeCategory}", active brand: "${activeBrand}", search query: "${searchQuery}"`); // Debugging log
             const filteredItems = itemsData.filter(item => {
                 const categoryMatch = item.category === activeCategory;
                 const brandMatch = activeBrand === 'all' || item.brand === activeBrand;
-                 console.log(`Checking item "${item.name}": Category "${item.category}" (Match: ${categoryMatch}), Brand "${item.brand}" (Match: ${brandMatch}). Overall Match: ${categoryMatch && brandMatch}`); // Debugging log
-                return categoryMatch && brandMatch;
+                const searchMatch = searchQuery === '' ||
+                                    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                    item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                    (item.brand && item.brand.toLowerCase().includes(searchQuery.toLowerCase())); // Also search by brand name, check if brand exists
+
+                 console.log(`Checking item "${item.name}": Category "${item.category}" (Match: ${categoryMatch}), Brand "${item.brand}" (Match: ${brandMatch}), Search "${searchQuery}" (Match: ${searchMatch}). Overall Match: ${categoryMatch && brandMatch && searchMatch}`); // Debugging log
+                return categoryMatch && brandMatch && searchMatch;
             });
             console.log("Filtered items:", filteredItems); // Debugging log
             renderItems(filteredItems);
@@ -298,7 +368,7 @@
             // Close agent links when clicking anywhere else on the document
             document.addEventListener('click', (event) => {
                 // Check if the click was outside of any agent select button or agent links div
-                if (!event.target.classList.contains('agent-select-button') && !event.target.closest('.agent-links')) {
+                if (!event.target.classList.contains('agent-select-button') && !event.target.closest('.agent-links') && !event.target.closest('#search-input')) {
                      document.querySelectorAll('.agent-links').forEach(links => {
                         links.style.display = 'none';
                     });
@@ -318,6 +388,7 @@
             const categoryButtonsContainer = document.getElementById('category-buttons');
             const brandButtonsContainer = document.getElementById('brand-buttons');
             const itemSectionsContainer = document.getElementById('item-sections');
+            const searchInput = document.getElementById('search-input'); // Get search input
 
             // Clear existing buttons and sections before creating
             categoryButtonsContainer.innerHTML = '';
@@ -394,6 +465,14 @@
                     filterAndRenderItems();
                 });
             });
+
+            // Event listener for Search Input
+            searchInput.addEventListener('input', (event) => {
+                searchQuery = event.target.value.trim(); // Update search query
+                console.log("Search input changed:", searchQuery); // Debugging log
+                filterAndRenderItems(); // Filter and render based on new search query
+            });
+
 
             isUIInitialized = true; // Set the flag to true after successful initialization
              console.log("UI Initialization complete."); // Debugging log
